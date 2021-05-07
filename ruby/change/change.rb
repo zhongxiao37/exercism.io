@@ -36,19 +36,20 @@ end
 # p Change.generate([2, 5, 10, 20, 50], 21)
 
 
-coins = [2, 5, 10, 20, 50]
-amount = 21
+coins = [2, 5, 10, 11]
+amount = 20
 m = [[]] + [nil] * amount
 coins.size
      .times
      .to_a
      .product((1..amount).to_a)
      .each { |c, t|
+       p [c, t]
        if coins[c] == t
          m[t] = [coins[c]]
        else
-         (1..t - 1).select { |t2| coins[c] + t2 == t }
-                   .reject { |t2| m[t2].nil? }
+         (1..t - 1).select { |t2| coins[c] + t2 == t }.tap { |x| puts "select:    #{x}" }
+                   .reject { |t2| m[t2].nil? }.tap { |x| puts "reject:    #{x}" }
                    .each { |t2|
                      m[t] = m[t2] + [coins[c]] if m[t].nil? || m[t2].size + 1 < m[t].size 
                    }

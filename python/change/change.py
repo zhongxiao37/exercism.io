@@ -1,4 +1,23 @@
 from itertools import product
+import time
+
+
+def time_it(mode='simple'):
+    def decorator(func):
+        def clock(*args):
+            t0 = time.time()
+            result = func(*args)
+            elapsed = time.time() - t0
+            arg_str = ','.join(repr(arg) for arg in args)
+            if mode == 'simple':
+                output = '%s Total time: %0.8f sec' % (func.__name__, elapsed)
+            else:
+                output = '%s(%s) = %s Total time: %0.8f sec' % (func.__name__, arg_str, result, elapsed)
+            print(output)
+            return result
+        return clock
+    return decorator
+
 
 def find_fewest_coins(coins, target):
     if target == 0:
@@ -30,3 +49,48 @@ def find_fewest_coins(coins, target):
         return m[target]
 
 
+@time_it('simple')
+def change_dynamic(coins, target):
+    memo = [None] * (target+1)
+    memo[0] = []
+    for i in range(1, target+1):
+        res = None
+        for coin in coins:
+            if coin > i: continue
+            tmp = memo[i-coin]
+            if tmp is None: continue
+            if res is None or len(res) > len(tmp):
+                res = tmp + [coin]
+        memo[i] = res
+
+    return memo[target]
+
+
+@time_it('simple')
+def change(coins, target):
+    memo = dict()
+    def dp(n):
+        if n in memo:
+            return memo[n]
+        if n < 0:
+            return None
+        res = None
+        for coin in coins:
+            if n == coin:
+                res = [coin]
+            else:
+                subproblem = dp(n - coin)
+                if subproblem is None: continue
+                if res is None or len(res) > len(subproblem):
+                    res = subproblem + [coin]
+        
+        memo[n] = res
+        return res
+    return dp(target)
+
+
+coins = [1, 2, 5, 10, 20, 25, 50, 100]
+target = 96
+print(change(coins, target))
+
+print(change_dynamic(coins, target))
